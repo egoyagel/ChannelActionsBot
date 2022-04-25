@@ -86,18 +86,17 @@ async def get_me():
 
 
 bot_username = bot.loop.run_until_complete(get_me())
-start_msg = """Hi {user}!
+start_msg = """Merhaba {user} !
 
-**I'm a channel actions bot, mainly focused on working with the new [admin approval invite links](https://t.me/telegram/153).**
+**Ben bir kanal istek onay botuyum.**
 
-**__I can__**:
-- __Auto approve new join requests.__
-- __Auto Decline New Join Requests.__
+**__Yapabildiklerim:__**:
+- __Yeni katılım isteklerini otomatik onaylama.__
+- __Yeni katılım isteklerini otomatik reddetme.__
 
-`Click the below button to know how to use me!`"""
 start_buttons = [
-    [Button.inline("How to use me ❓", data="helper")],
-    [Button.url("Updates", "https://t.me/BotzHub")],
+    [Button.inline("Bot kullanımı ❓", data="helper")],
+    [Button.url("Cidden Medya", "https://t.me/ciddenmedya")],
 ]
 
 
@@ -126,8 +125,8 @@ async def start_in(event):
 @bot.on(events.CallbackQuery(data="helper"))
 async def helper(event):
     await event.edit(
-        '**Usage instructions.**\n\nAdd me to your channel, as administrator, with "add users" permission, and forward me a message from that chat to set me up!\n\nTo approve members who are already in waiting list, upgrade to premium for 3$ per month! Contact @xditya_bot if interested.',
-        buttons=Button.inline("Main Menu 📭", data="start"),
+        '**Kullanım talimatları.**\n\n"Kullanıcı ekle" izniyle yönetici olarak beni kanalınıza ekleyin ve beni ayarlamak için o sohbetten bana bir mesaj iletin!\n',
+        buttons=Button.inline("Ana Menü 📭", data="start"),
     )
 
 
@@ -135,15 +134,15 @@ async def helper(event):
 async def settings_selctor(event):
     id = event.fwd_from.from_id
     if not isinstance(id, types.PeerChannel):
-        await event.reply("Looks like this isn't from a channel!")
+        await event.reply("Bu bir kanaldan değil gibi görünüyor!")
         return
     try:
         chat = await bot.get_entity(id)
         if chat.admin_rights is None:
-            await event.reply("Seems like I'm not admin in this channel!")
+            await event.reply("Bu kanalda admin değilim gibi görünüyor!")
             return
     except ValueError:
-        await event.reply("Seems like you haven't added me to your channel!")
+        await event.reply("Beni kanalına eklememişsin anlaşılan!")
         return
 
     # check if the guy trying to change settings is an admin
@@ -159,7 +158,7 @@ async def settings_selctor(event):
         ).participant
     except errors.rpcerrorlist.UserNotParticipantError:
         await event.reply(
-            "You are not in the channel, or an admin, to perform this action."
+            "Bu eylemi gerçekleştirmek için kanalda veya yönetici değilsiniz."
         )
         return
     if not (
@@ -168,7 +167,7 @@ async def settings_selctor(event):
         )
     ):
         await event.reply(
-            "You are not an admin of this channel and cannot change it's settings!"
+            "Bu kanalın yöneticisi değilsiniz ve ayarlarını değiştiremezsiniz!"
         )
         return
 
@@ -176,14 +175,14 @@ async def settings_selctor(event):
     added_chats = eval(added_chats)
     setting = added_chats.get(str(chat.id)) or "Auto-Approve"
     await event.reply(
-        "**Settings for {title}**\n\nSelect what to do on new join requests.\n\n**Current setting** - __{set}__".format(
+        "**Settings for {title}**\n\nYeni katılma isteklerinde ne yapacağınızı seçin.\n\n**Current setting** - __{set}__".format(
             title=chat.title, set=setting
         ),
         buttons=[
-            [Button.inline("Auto-Approve", data="set_ap_{}".format(chat.id))],
+            [Button.inline("Oto-Onay", data="set_ap_{}".format(chat.id))],
             [
                 Button.inline(
-                    "Auto-Disapprove",
+                    "Oto-Reddetme",
                     data="set_disap_{}".format(chat.id),
                 )
             ],
@@ -205,7 +204,7 @@ async def settings(event):
         added_chats.update({chat: op})
     db.set("CHAT_SETTINGS", str(added_chats))
     await event.edit(
-        "Settings updated! New members in the channel `{}` will be {}d!".format(
+        "Ayarlar güncellendi! `{}` kanalındaki yeni üyeler {}d olacak!".format(
             chat, op
         )
     )
@@ -218,15 +217,15 @@ async def approver(event):
     chat_settings = eval(chat_settings)
     who = await bot.get_entity(event.user_id)
     chat_ = await bot.get_entity(chat)
-    if chat_settings.get(str(chat)) == "Auto-Approve":
+    if chat_settings.get(str(chat)) == "Oto-Onay":
         appr = True
         dn = "approved!"
-    elif chat_settings.get(str(chat)) == "Auto-Disapprove":
+    elif chat_settings.get(str(chat)) == "Oto-Reddetme":
         appr = False
         dn = "disapproved :("
     await bot.send_message(
         event.user_id,
-        "Hello {}, your request to join {} has been {}\n\nSend /start to know more.".format(
+        "Merhaba {}, {} katılma isteğiniz {}\n\nDaha fazla bilgi için gönder /start.".format(
             who.first_name, chat_.title, dn
         ),
     )
@@ -265,10 +264,10 @@ async def broad(e):
             done += 1
         except:
             error += 1
-    await xx.edit("Broadcast completed.\nSuccess: {}\nFailed: {}".format(done, error))
+    await xx.edit("Yayın tamamlandı.\nBaşarılı: {}\nBaşarısız: {}".format(done, error))
 
 
 log.info("Started Bot - %s", bot_username)
-log.info("\n@BotzHub\n\nBy - @xditya.")
+log.info("\n@ciddenmedya\n\nBy - @egoyagel.")
 
 bot.run_until_disconnected()
